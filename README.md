@@ -62,9 +62,6 @@ python run_tests.py --case cases/cereshop_cases.json --base-url http://127.0.0.1
 
 其中部分接口可能需要登录 token 或数据库测试数据。实际使用时需要根据本地环境调整账号、密码、商品 ID、token 字段路径和期望返回码。
 
-## 简历表述建议
-
-可以写成：
 
 > 基于 Python 标准库实现轻量级接口自动化测试工具，采用 JSON 管理测试用例，支持 GET/POST 请求、Header/Token、变量提取、状态码/响应字段/响应时间断言，并生成 HTML 测试报告；结合 CERESHOP 商城项目对登录、商品查询、店铺查询、购物车、订单等接口设计用例模板，提升接口回归验证效率。
 
