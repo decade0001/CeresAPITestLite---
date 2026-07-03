@@ -6,7 +6,7 @@ from urllib.parse import parse_qs, urlparse
 
 
 class MockHandler(BaseHTTPRequestHandler):
-    server_version = "CeresMock/1.0"
+    server_version = "APIMock/1.0"
 
     def send_json(self, status, body):
         data = json.dumps(body, ensure_ascii=False).encode("utf-8")
@@ -29,14 +29,35 @@ class MockHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
         query = parse_qs(parsed.query)
-        if parsed.path == "/product/getProducts":
-            self.send_json(200, {"code": 200, "message": "success", "data": {"total": 2, "list": [{"productId": 1001, "name": "测试商品"}]}})
-        elif parsed.path == "/product/getById":
+
+        if parsed.path in ("/products", "/product/getProducts"):
+            self.send_json(
+                200,
+                {
+                    "code": 200,
+                    "message": "success",
+                    "data": {
+                        "total": 2,
+                        "list": [
+                            {"productId": 1001, "name": "demo product", "price": 99},
+                            {"productId": 1002, "name": "sample product", "price": 199},
+                        ],
+                    },
+                },
+            )
+        elif parsed.path in ("/products/detail", "/product/getById"):
             product_id = query.get("productId", ["1001"])[0]
-            self.send_json(200, {"code": 200, "message": "success", "data": {"productId": product_id, "name": "测试商品", "price": 99}})
+            self.send_json(
+                200,
+                {
+                    "code": 200,
+                    "message": "success",
+                    "data": {"productId": product_id, "name": "demo product", "price": 99},
+                },
+            )
         elif parsed.path == "/shop/getShops":
-            self.send_json(200, {"code": 200, "message": "success", "data": {"list": [{"shopId": 1, "shopName": "测试店铺"}]}})
-        elif parsed.path == "/cart/getCart":
+            self.send_json(200, {"code": 200, "message": "success", "data": {"list": [{"shopId": 1, "shopName": "demo shop"}]}})
+        elif parsed.path in ("/cart", "/cart/getCart"):
             if not self.headers.get("Authorization"):
                 self.send_json(401, {"code": 401, "message": "missing token"})
             else:
@@ -49,7 +70,7 @@ class MockHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         parsed = urlparse(self.path)
         body = self.read_json()
-        if parsed.path == "/app/login":
+        if parsed.path in ("/auth/login", "/app/login"):
             if body.get("phone") and body.get("password"):
                 self.send_json(200, {"code": 200, "message": "success", "data": {"token": "mock-token-123", "userId": 1}})
             else:
@@ -69,4 +90,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

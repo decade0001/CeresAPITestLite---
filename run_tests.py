@@ -13,6 +13,16 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+try:
+    import requests
+except ImportError:  # keep the tool runnable in a clean Python environment
+    requests = None
+
+try:
+    from jinja2 import Environment, FileSystemLoader, select_autoescape
+except ImportError:
+    Environment = None
+
 
 def load_json(path):
     with open(path, "r", encoding="utf-8") as f:
@@ -73,6 +83,36 @@ def request(case, base_url, context, timeout):
     params = render_value(case.get("params", {}), context)
     body = render_value(case.get("json"), context)
     url = build_url(base_url, render_value(case.get("path", ""), context), params)
+
+    if requests is not None:
+        started = time.perf_counter()
+        status_code = None
+        raw_text = ""
+        error = None
+        try:
+            resp = requests.request(method=method, url=url, headers=headers, json=body, timeout=timeout)
+            status_code = resp.status_code
+            raw_text = resp.text
+        except Exception as exc:
+            error = str(exc)
+        elapsed_ms = round((time.perf_counter() - started) * 1000, 2)
+
+        json_body = None
+        if raw_text:
+            try:
+                json_body = json.loads(raw_text)
+            except Exception:
+                json_body = None
+
+        return {
+            "url": url,
+            "method": method,
+            "status_code": status_code,
+            "elapsed_ms": elapsed_ms,
+            "text": raw_text,
+            "json": json_body,
+            "error": error,
+        }
 
     data = None
     if body is not None:
@@ -212,6 +252,16 @@ def write_reports(summary, report_dir):
 
 
 def render_html(summary):
+    template_dir = Path(__file__).resolve().parent / "templates"
+    template_path = template_dir / "report.html.j2"
+    if Environment is not None and template_path.exists():
+        env = Environment(
+            loader=FileSystemLoader(str(template_dir)),
+            autoescape=select_autoescape(["html", "xml"]),
+        )
+        template = env.get_template("report.html.j2")
+        return template.render(summary=summary)
+
     rows = []
     for item in summary["results"]:
         status = "PASS" if item["passed"] else "FAIL"
@@ -268,7 +318,7 @@ def render_html(summary):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="CeresAPITestLite - lightweight API test runner")
+    parser = argparse.ArgumentParser(description="CeresAPITestLite - generic API test runner")
     parser.add_argument("--case", default="cases/demo_cases.json", help="case json file")
     parser.add_argument("--base-url", default=None, help="override base url")
     parser.add_argument("--report-dir", default="reports", help="report output directory")

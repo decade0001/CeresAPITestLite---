@@ -1,5 +1,5 @@
 {
-  "name": "CERESHOP mock API smoke test",
+  "name": "Demo API smoke test",
   "base_url": "http://127.0.0.1:19007",
   "variables": {
     "phone": "13800138000",
@@ -11,9 +11,9 @@
   },
   "cases": [
     {
-      "name": "用户登录并提取 token",
+      "name": "login and extract token",
       "method": "POST",
-      "path": "/app/login",
+      "path": "/auth/login",
       "json": {
         "phone": "${phone}",
         "password": "${password}"
@@ -29,9 +29,9 @@
       ]
     },
     {
-      "name": "商品列表查询",
+      "name": "query product list",
       "method": "GET",
-      "path": "/product/getProducts",
+      "path": "/products",
       "params": {
         "page": 1,
         "pageSize": 10
@@ -43,9 +43,9 @@
       ]
     },
     {
-      "name": "商品详情查询",
+      "name": "query product detail",
       "method": "GET",
-      "path": "/product/getById",
+      "path": "/products/detail",
       "params": {
         "productId": "${productId}"
       },
@@ -55,9 +55,9 @@
       ]
     },
     {
-      "name": "购物车需要登录态",
+      "name": "query cart with token",
       "method": "GET",
-      "path": "/cart/getCart",
+      "path": "/cart",
       "headers": {
         "Authorization": "Bearer ${token}"
       },
@@ -68,4 +68,3 @@
     }
   ]
 }
-

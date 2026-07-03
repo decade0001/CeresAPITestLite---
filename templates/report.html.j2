@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>{{ summary.suite }} - API Test Report</title>
+  <style>
+    body { font-family: Arial, "Microsoft YaHei", sans-serif; margin: 24px; color: #1f2937; }
+    h1 { margin: 0 0 4px; }
+    .meta { color: #6b7280; margin-bottom: 18px; }
+    .cards { display: flex; gap: 12px; margin-bottom: 18px; }
+    .card { border: 1px solid #e5e7eb; border-radius: 6px; padding: 10px 14px; min-width: 100px; }
+    .num { font-size: 24px; font-weight: 700; }
+    table { border-collapse: collapse; width: 100%; font-size: 13px; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; vertical-align: top; }
+    th { background: #f3f4f6; text-align: left; }
+    .pass { color: #047857; font-weight: 700; }
+    .fail { color: #b91c1c; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <h1>{{ summary.suite }}</h1>
+  <div class="meta">Base URL: {{ summary.base_url }} | Generated at: {{ summary.generated_at }}</div>
+  <div class="cards">
+    <div class="card"><div>total</div><div class="num">{{ summary.total }}</div></div>
+    <div class="card"><div>passed</div><div class="num pass">{{ summary.passed }}</div></div>
+    <div class="card"><div>failed</div><div class="num fail">{{ summary.failed }}</div></div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Case</th>
+        <th>Status</th>
+        <th>Method</th>
+        <th>HTTP</th>
+        <th>Time(ms)</th>
+        <th>URL</th>
+        <th>Assertions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in summary.results %}
+      {% set response = item.response or {} %}
+      <tr>
+        <td>{{ item.index }}</td>
+        <td>{{ item.name }}</td>
+        <td class="{{ 'pass' if item.passed else 'fail' }}">{{ 'PASS' if item.passed else 'FAIL' }}</td>
+        <td>{{ response.method or '' }}</td>
+        <td>{{ response.status_code or '' }}</td>
+        <td>{{ response.elapsed_ms or '' }}</td>
+        <td>{{ response.url or '' }}</td>
+        <td>
+          {% for assertion in item.assertions %}
+            {{ 'PASS' if assertion.passed else 'FAIL' }} - {{ assertion.message }}<br>
+          {% endfor %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>
