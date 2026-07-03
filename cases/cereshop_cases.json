@@ -1,0 +1,99 @@
+{
+  "name": "CERESHOP API regression template",
+  "base_url": "http://127.0.0.1:9007",
+  "variables": {
+    "phone": "请替换为测试账号",
+    "password": "请替换为测试密码",
+    "productId": "请替换为商品ID"
+  },
+  "global_headers": {
+    "Accept": "application/json"
+  },
+  "cases": [
+    {
+      "name": "买家登录接口",
+      "method": "POST",
+      "path": "/app/login",
+      "json": {
+        "phone": "${phone}",
+        "password": "${password}"
+      },
+      "extract": {
+        "token": "data.token"
+      },
+      "assertions": [
+        {"type": "status_code", "equals": 200},
+        {"type": "json_field_exists", "path": "code"},
+        {"type": "response_time_less_than", "ms": 3000}
+      ]
+    },
+    {
+      "name": "商品列表接口",
+      "method": "GET",
+      "path": "/product/getProducts",
+      "params": {
+        "page": 1,
+        "pageSize": 10
+      },
+      "assertions": [
+        {"type": "status_code", "equals": 200},
+        {"type": "json_field_exists", "path": "code"},
+        {"type": "response_time_less_than", "ms": 3000}
+      ]
+    },
+    {
+      "name": "商品详情接口",
+      "method": "GET",
+      "path": "/product/getById",
+      "params": {
+        "productId": "${productId}"
+      },
+      "assertions": [
+        {"type": "status_code", "equals": 200},
+        {"type": "json_field_exists", "path": "code"}
+      ]
+    },
+    {
+      "name": "店铺列表接口",
+      "method": "GET",
+      "path": "/shop/getShops",
+      "params": {
+        "page": 1,
+        "pageSize": 10
+      },
+      "assertions": [
+        {"type": "status_code", "equals": 200},
+        {"type": "json_field_exists", "path": "code"}
+      ]
+    },
+    {
+      "name": "购物车查询接口",
+      "method": "GET",
+      "path": "/cart/getCart",
+      "headers": {
+        "Authorization": "Bearer ${token}"
+      },
+      "assertions": [
+        {"type": "status_code", "equals": 200},
+        {"type": "json_field_exists", "path": "code"}
+      ]
+    },
+    {
+      "name": "订单列表接口",
+      "method": "GET",
+      "path": "/order/getAll",
+      "headers": {
+        "Authorization": "Bearer ${token}"
+      },
+      "params": {
+        "page": 1,
+        "pageSize": 10
+      },
+      "assertions": [
+        {"type": "status_code", "equals": 200},
+        {"type": "json_field_exists", "path": "code"}
+      ]
+    }
+  ]
+}
+

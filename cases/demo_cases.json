@@ -1,0 +1,71 @@
+{
+  "name": "CERESHOP mock API smoke test",
+  "base_url": "http://127.0.0.1:19007",
+  "variables": {
+    "phone": "13800138000",
+    "password": "123456",
+    "productId": "1001"
+  },
+  "global_headers": {
+    "Accept": "application/json"
+  },
+  "cases": [
+    {
+      "name": "用户登录并提取 token",
+      "method": "POST",
+      "path": "/app/login",
+      "json": {
+        "phone": "${phone}",
+        "password": "${password}"
+      },
+      "extract": {
+        "token": "data.token"
+      },
+      "assertions": [
+        {"type": "status_code", "equals": 200},
+        {"type": "json_field_equals", "path": "code", "equals": 200},
+        {"type": "json_field_not_empty", "path": "data.token"},
+        {"type": "response_time_less_than", "ms": 1000}
+      ]
+    },
+    {
+      "name": "商品列表查询",
+      "method": "GET",
+      "path": "/product/getProducts",
+      "params": {
+        "page": 1,
+        "pageSize": 10
+      },
+      "assertions": [
+        {"type": "status_code", "equals": 200},
+        {"type": "json_field_equals", "path": "code", "equals": 200},
+        {"type": "json_field_exists", "path": "data.list.0.name"}
+      ]
+    },
+    {
+      "name": "商品详情查询",
+      "method": "GET",
+      "path": "/product/getById",
+      "params": {
+        "productId": "${productId}"
+      },
+      "assertions": [
+        {"type": "status_code", "equals": 200},
+        {"type": "json_field_equals", "path": "data.productId", "equals": "${productId}"}
+      ]
+    },
+    {
+      "name": "购物车需要登录态",
+      "method": "GET",
+      "path": "/cart/getCart",
+      "headers": {
+        "Authorization": "Bearer ${token}"
+      },
+      "assertions": [
+        {"type": "status_code", "equals": 200},
+        {"type": "json_field_equals", "path": "code", "equals": 200}
+      ]
+    }
+  ]
+}
+
